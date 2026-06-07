@@ -15,7 +15,8 @@ async function fetchRates() {
         return {
           usdJpy: jpy,
           cnyJpy: jpy / cny,
-          updatedUnix: Date.now(), // 取得した時刻（＝表示する「最終更新」）
+          // 無料枠は1日1回更新。レートが公表された時刻を「最終更新」として表示する
+          updatedUnix: (d.time_last_update_unix || Math.floor(Date.now() / 1000)) * 1000,
           source: "open.er-api.com",
         };
       }
@@ -29,7 +30,7 @@ async function fetchRates() {
       const jpy = d && d.rates && d.rates.JPY;
       const cny = d && d.rates && d.rates.CNY;
       if (jpy && cny) {
-        return { usdJpy: jpy, cnyJpy: jpy / cny, updatedUnix: Date.now(), source: "frankfurter(ECB)" };
+        return { usdJpy: jpy, cnyJpy: jpy / cny, updatedUnix: Date.parse(d.date) || Date.now(), source: "frankfurter(ECB)" };
       }
     }
   } catch (e) { /* fall through */ }
