@@ -1,0 +1,44 @@
+.cnyjpy-bubble {
+  position: absolute;
+  z-index: 2147483647;
+  min-width: 220px;
+  max-width: 360px;
+  padding: 8px 10px;
+  background: #161616;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, .5);
+  font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity .12s ease, transform .12s ease;
+}
+.cnyjpy-bubble.is-show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+.cnyjpy-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cnyjpy-row:hover { background: rgba(255, 255, 255, .08); }
+.cnyjpy-row.copied { background: rgba(120, 200, 150, .22); }
+.cnyjpy-flag { margin-right: 5px; font-size: 13px; }
+.cnyjpy-src { color: #c9c9c9; }
+.cnyjpy-arrow { color: #7d7d7d; }
+.cnyjpy-dst { margin-left: auto; font-weight: 800; font-size: 15px; color: #fff; }
+.cnyjpy-row.copied .cnyjpy-dst::after { content: " ✓"; color: #7fd0a0; font-weight: 700; }
+
+.cnyjpy-foot {
+  margin-top: 4px;
+  padding: 0 6px;
+  font-size: 10.5px;
+  color: #8a8a8a;
+}

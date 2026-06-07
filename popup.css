@@ -1,0 +1,37 @@
+:root{ --ink:#1c2430; --muted:#6b7787; --line:#e6e9ef; --accent:#2f7d57; --bg:#f7f8fa; }
+*{box-sizing:border-box;margin:0;}
+body{width:300px;font-family:-apple-system,"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;color:var(--ink);background:#fff;}
+
+.pp-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#161616;color:#fff;}
+.pp-brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;}
+.pp-logo{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:#2c2c2c;border:1px solid rgba(255,255,255,.18);font-size:13px;font-weight:800;}
+.pp-sub{font-size:11px;letter-spacing:.06em;color:#9aa3ad;}
+
+.pp-rates{padding:12px 14px;border-bottom:1px solid var(--line);}
+.pp-rate{display:flex;align-items:baseline;gap:7px;padding:2px 0;font-size:14px;}
+.pp-flag{font-size:14px;}
+.pp-cur{color:var(--muted);min-width:48px;}
+.pp-eq{color:var(--muted);}
+.pp-rate b{font-size:18px;color:#15324f;font-weight:800;}
+.pp-yen{font-size:12px;color:var(--muted);}
+.pp-updated{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--muted);}
+.pp-refresh{padding:5px 11px;border:1px solid var(--line);background:var(--bg);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink);}
+.pp-refresh:hover{background:#eef1f5;}
+
+.pp-calc{padding:12px 14px;border-bottom:1px solid var(--line);}
+.pp-calc input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;}
+.pp-calc-out{margin-top:8px;display:flex;flex-direction:column;gap:4px;}
+.pp-row{display:flex;align-items:baseline;gap:7px;font-size:13px;}
+.pp-clbl{color:var(--muted);min-width:34px;}
+.pp-cval{margin-left:auto;font-weight:800;color:var(--accent);}
+
+.pp-settings{padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.pp-field{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.pp-field label{font-size:12.5px;}
+.pp-inline{display:flex;align-items:center;gap:5px;}
+.pp-inline input{width:72px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;text-align:right;}
+.pp-unit{font-size:11px;color:var(--muted);}
+.pp-toggle{display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;}
+.pp-toggle input{width:15px;height:15px;}
+
+.pp-foot{padding:0 14px 14px;font-size:11px;color:var(--muted);line-height:1.5;}

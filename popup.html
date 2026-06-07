@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="pp-head">
+    <div class="pp-brand"><span class="pp-logo">元</span><span>元換算</span></div>
+    <span class="pp-sub">→ JPY</span>
+  </header>
+
+  <section class="pp-rates">
+    <div class="pp-rate"><span class="pp-flag">🇨🇳</span><span class="pp-cur">1 元</span><span class="pp-eq">=</span><b id="cnyRate">—</b><span class="pp-yen">円</span></div>
+    <div class="pp-rate"><span class="pp-flag">🇺🇸</span><span class="pp-cur">1 USD</span><span class="pp-eq">=</span><b id="usdRate">—</b><span class="pp-yen">円</span></div>
+    <div class="pp-updated"><span id="updated">レート取得中…</span><button id="refreshBtn" class="pp-refresh">更新</button></div>
+  </section>
+
+  <section class="pp-calc">
+    <input type="number" id="calcIn" inputmode="decimal" placeholder="金額を入力" />
+    <div class="pp-calc-out">
+      <div class="pp-row"><span class="pp-flag">🇨🇳</span><span class="pp-clbl">元</span><span class="pp-cval" id="outCny">🇯🇵 0 円</span></div>
+      <div class="pp-row"><span class="pp-flag">🇺🇸</span><span class="pp-clbl">USD</span><span class="pp-cval" id="outUsd">🇯🇵 0 円</span></div>
+    </div>
+  </section>
+
+  <section class="pp-settings">
+    <div class="pp-field">
+      <label for="markup">手数料・利益の上乗せ</label>
+      <div class="pp-inline"><input type="number" id="markup" min="0" max="500" step="1"><span class="pp-unit">%</span></div>
+    </div>
+    <label class="pp-toggle"><input type="checkbox" id="autoShow"><span>選択で自動表示</span></label>
+    <label class="pp-toggle"><input type="checkbox" id="chineseOnly"><span>中国系サイトのみで動作</span></label>
+  </section>
+
+  <p class="pp-foot">ページ上の金額（「1万8538」のような表記もOK）をドラッグ選択すると、その場で円に換算して表示します。</p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
