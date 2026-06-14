@@ -121,6 +121,9 @@
     html += rowHTML("🇺🇸", "USD", num, num * FX.usdJpy * mult);
     if (CFG.markupPct) html += '<div class="cnyjpy-foot">上乗せ ' + CFG.markupPct + '%　・　行をクリックでコピー</div>';
     else html += '<div class="cnyjpy-foot">行をクリックでコピー</div>';
+    if (FX.source === "fallback") {
+      html = '<div class="cnyjpy-warn">⚠ 概算（レート取得失敗・保険値で換算）</div>' + html;
+    }
     b.innerHTML = html;
     const top = window.scrollY + rect.bottom + 8;
     let left = window.scrollX + rect.left;
