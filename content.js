@@ -14,35 +14,86 @@
     return CN_HOSTS.some((d) => location.hostname.includes(d));
   }
 
-  // 漢字単位（万・億・千・百…）混じり / 桁区切り / 通貨記号 を許容して数値化
-  const UNIT = { "億": 1e8, "亿": 1e8, "万": 1e4, "萬": 1e4, "千": 1e3, "仟": 1e3, "百": 1e2, "佰": 1e2, "十": 10, "拾": 10 };
+  // ── 数値パース：漢数字・全角・漢字単位の様々な表記を許容して数値化 ──
+  // 大単位（前の塊にかかる）／小単位（その場の数にかかる）を分けて二段で合成する。
+  const BIG_UNIT = { "兆": 1e12, "億": 1e8, "亿": 1e8, "万": 1e4, "萬": 1e4 };
+  const SMALL_UNIT = { "千": 1e3, "仟": 1e3, "阡": 1e3, "百": 1e2, "佰": 1e2, "十": 10, "拾": 10 };
+  const ALL_UNIT_CHARS = "兆億亿万萬千仟阡百佰十拾";
+  // 漢数字・全角→半角。単位漢字（万億千…）は変換しない。
+  const KANJI_DIGIT = {
+    "〇": "0", "零": "0", "一": "1", "壱": "1", "壹": "1", "二": "2", "弐": "2", "貳": "2",
+    "两": "2", "兩": "2", "三": "3", "参": "3", "參": "3", "四": "4", "肆": "4", "五": "5",
+    "伍": "5", "六": "6", "陸": "6", "七": "7", "八": "8", "捌": "8", "九": "9", "玖": "9",
+  };
+  function normalize(s) {
+    let out = "";
+    for (const ch of s) {
+      const code = ch.charCodeAt(0);
+      if (code >= 0xff10 && code <= 0xff19) out += String.fromCharCode(code - 0xfee0); // 全角0-9
+      else if (ch === "．") out += ".";
+      else if (ch === "，") out += ",";
+      else if (ch === "点" || ch === "點") out += ".";           // 中国語の小数点
+      else if (KANJI_DIGIT[ch] != null) out += KANJI_DIGIT[ch];
+      else out += ch;
+    }
+    return out;
+  }
   function parseAmount(text) {
     if (!text) return null;
     let t = text.trim();
     if (t.length > 40) return null;
-    t = t.split(/[~〜～\-–—]/)[0]; // 範囲は先頭
+    t = t.split(/[~〜～\-–—]/)[0];                                // 範囲は先頭だけ
+    t = normalize(t);
     // 通貨記号・通貨名・桁区切り・空白を除去（単位漢字は残す）
-    t = t.replace(/[¥￥$＄]|元|块|塊|人民币|人民幣|RMB|rmb|CNY|cny|USD|usd|US|円|圆|\$|,|，|\s/g, "");
+    t = t.replace(/[¥￥$＄]|元|块|塊|圆|圓|人民币|人民幣|RMB|rmb|CNY|cny|USD|usd|US|円|,|，|\s/g, "");
     if (!t) return null;
-    // 単位漢字なし → そのまま
+    // 単位漢字なし → そのまま数値化
     if (/^[\d.]+$/.test(t)) {
       const n = parseFloat(t);
       return isFinite(n) && n > 0 ? n : null;
     }
-    // 単位漢字あり → 合成
-    if (![..."億亿万萬千仟百佰十拾"].some((u) => t.includes(u))) return null;
-    let total = 0, buf = "";
+    if (![...ALL_UNIT_CHARS].some((u) => t.includes(u))) return null;
+    // 二段合成：current=今の数, section=万未満の小計, total=確定分
+    let total = 0, section = 0, buf = "", current = 0;
     for (const ch of t) {
-      if (/[\d.]/.test(ch)) { buf += ch; }
-      else if (UNIT[ch]) { total += (buf ? parseFloat(buf) : 1) * UNIT[ch]; buf = ""; }
+      if (/[\d.]/.test(ch)) { buf += ch; continue; }
+      if (buf) { current = parseFloat(buf); buf = ""; }
+      if (SMALL_UNIT[ch] != null) {
+        section += (current || 1) * SMALL_UNIT[ch]; // 「百」単独 = 100
+        current = 0;
+      } else if (BIG_UNIT[ch] != null) {
+        const base = section + current || 1;        // 「万」単独 = 1万
+        total += base * BIG_UNIT[ch];
+        section = 0; current = 0;
+      }
       // それ以外の文字は無視
     }
-    if (buf) total += parseFloat(buf);
+    if (buf) current = parseFloat(buf);
+    total += section + current;
     return isFinite(total) && total > 0 ? total : null;
   }
 
-  function fmtJPY(n) { return Math.round(n).toLocaleString("ja-JP") + " 円"; }
-  function fmtSrc(n) { return (Math.round(n * 100) / 100).toLocaleString("en-US"); }
+  // ── 表示フォーマット：桁が大きいときは 万/億/兆 でコンパクト表示 ──
+  const COMPACT_FROM = 1e6; // これ以上は漢字単位に切り替え（小さい額はそのまま桁区切り）
+  const BIG_LABELS = [[1e12, "兆"], [1e8, "億"], [1e4, "万"]];
+  function compactNum(n) {
+    if (!isFinite(n)) return "0";
+    const abs = Math.abs(n);
+    if (abs >= COMPACT_FROM) {
+      for (const [v, label] of BIG_LABELS) {
+        if (abs >= v) {
+          const x = n / v, ax = Math.abs(x);
+          const dec = ax >= 1000 ? 0 : ax >= 100 ? 1 : 2; // 有効数字 ≒4桁
+          const head = x.toLocaleString("en-US", { maximumFractionDigits: dec, useGrouping: false });
+          return head + label;
+        }
+      }
+    }
+    return (Math.round(n * 100) / 100).toLocaleString("ja-JP");
+  }
+  function fmtJPY(n) { return compactNum(n) + " 円"; }
+  function exactJPY(n) { return Math.round(n).toLocaleString("ja-JP") + " 円"; }
+  function fmtSrc(n) { return compactNum(n); }
 
   function ensureBubble() {
     if (bubble) return bubble;
@@ -55,7 +106,7 @@
   function hideBubble() { if (bubble) bubble.classList.remove("is-show"); }
 
   function rowHTML(flag, label, srcVal, jpy) {
-    return '<div class="cnyjpy-row" data-jpy="' + Math.round(jpy) + '">' +
+    return '<div class="cnyjpy-row" data-jpy="' + Math.round(jpy) + '" title="' + exactJPY(jpy) + '">' +
       '<span class="cnyjpy-src"><span class="cnyjpy-flag">' + flag + '</span>' + fmtSrc(srcVal) + ' ' + label + '</span>' +
       '<span class="cnyjpy-arrow">→</span>' +
       '<span class="cnyjpy-dst"><span class="cnyjpy-flag">🇯🇵</span>' + fmtJPY(jpy) + '</span></div>';

@@ -4,7 +4,26 @@ let FX = null, CFG = { ...DEFAULTS };
 
 function mult() { return 1 + (Number(CFG.markupPct) || 0) / 100; }
 function n2(x) { return (Math.round(x * 100) / 100).toLocaleString("en-US"); }
-function yen(x) { return Math.round(x).toLocaleString("ja-JP") + " 円"; }
+
+// 桁が大きいときは 万/億/兆 でコンパクト表示（小さい額はそのまま桁区切り）
+const COMPACT_FROM = 1e6;
+const BIG_LABELS = [[1e12, "兆"], [1e8, "億"], [1e4, "万"]];
+function compactNum(n) {
+  if (!isFinite(n)) return "0";
+  const abs = Math.abs(n);
+  if (abs >= COMPACT_FROM) {
+    for (const [v, label] of BIG_LABELS) {
+      if (abs >= v) {
+        const x = n / v, ax = Math.abs(x);
+        const dec = ax >= 1000 ? 0 : ax >= 100 ? 1 : 2;
+        return x.toLocaleString("en-US", { maximumFractionDigits: dec, useGrouping: false }) + label;
+      }
+    }
+  }
+  return (Math.round(n * 100) / 100).toLocaleString("ja-JP");
+}
+function yen(x) { return compactNum(x) + " 円"; }
+function exactYen(x) { return Math.round(x).toLocaleString("ja-JP") + " 円"; }
 
 function fmtUpdated(unix) {
   if (!unix) return "レート未取得";
@@ -28,12 +47,13 @@ function render() {
 function calc() {
   const v = parseFloat($("calcIn").value);
   if (!isFinite(v) || v <= 0 || !FX) {
-    $("outCny").textContent = "🇯🇵 0 円";
-    $("outUsd").textContent = "🇯🇵 0 円";
+    $("outCny").textContent = "🇯🇵 0 円"; $("outCny").title = "";
+    $("outUsd").textContent = "🇯🇵 0 円"; $("outUsd").title = "";
     return;
   }
-  $("outCny").textContent = "🇯🇵 " + yen(v * FX.cnyJpy * mult());
-  $("outUsd").textContent = "🇯🇵 " + yen(v * FX.usdJpy * mult());
+  const cny = v * FX.cnyJpy * mult(), usd = v * FX.usdJpy * mult();
+  $("outCny").textContent = "🇯🇵 " + yen(cny); $("outCny").title = exactYen(cny);
+  $("outUsd").textContent = "🇯🇵 " + yen(usd); $("outUsd").title = exactYen(usd);
 }
 function saveCfg() {
   CFG = {
