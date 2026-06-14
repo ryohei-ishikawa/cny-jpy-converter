@@ -84,7 +84,7 @@
         if (abs >= v) {
           const x = n / v, ax = Math.abs(x);
           const dec = ax >= 1000 ? 0 : ax >= 100 ? 1 : 2; // 有効数字 ≒4桁
-          const head = x.toLocaleString("en-US", { maximumFractionDigits: dec, useGrouping: false });
+          const head = x.toLocaleString("en-US", { maximumFractionDigits: dec });
           return head + label;
         }
       }

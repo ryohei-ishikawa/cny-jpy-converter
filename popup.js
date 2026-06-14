@@ -16,7 +16,7 @@ function compactNum(n) {
       if (abs >= v) {
         const x = n / v, ax = Math.abs(x);
         const dec = ax >= 1000 ? 0 : ax >= 100 ? 1 : 2;
-        return x.toLocaleString("en-US", { maximumFractionDigits: dec, useGrouping: false }) + label;
+        return x.toLocaleString("en-US", { maximumFractionDigits: dec }) + label;
       }
     }
   }
